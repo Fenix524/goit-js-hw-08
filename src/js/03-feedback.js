@@ -21,7 +21,7 @@ myForm.addEventListener('submit', (e) => {
 
 myForm.addEventListener('input', throttle(onMyFormInput, 500));
 
-function onMyFormInput(){
+function onMyFormInput(e){
   saveToLocalStorage(dataKeyName, getObjWithFormData(e.currentTarget));
 }
 

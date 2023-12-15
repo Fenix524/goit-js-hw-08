@@ -1,5 +1,11 @@
 function getObjWithFormData(form) {
   const formFields = {};
+
+  if(!form){
+    console.log("?");
+    return
+  }
+
   const formData = new FormData(form);
   for (const [name, value] of formData.entries()) {
     formFields[name] = value;    

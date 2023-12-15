@@ -1,33 +1,44 @@
-import { getObjWithFormData, clearForm } from './jsModuls/workWithForm/workWithForm';
-import { saveToLocalStorage, readFromLocalStorage, removeFromLocalStorage} from './jsModuls/webStorade/workWithData';
-import throttle from 'lodash.throttle';
+import { throttle } from 'throttle-debounce';
+import { saveToLocalStorage } from './jsModuls/webStorade/workWithData';
 
-const myForm = document.querySelector('.feedback-form');
-const dataKeyName = "feedback-form-state";
+const form = document.querySelector('.feedback-form');
+form.addEventListener('input', inputValue);
+form.addEventListener('submit', onSubmit);
 
-// myForm.
-myForm.addEventListener('submit', (e) => {
+const DATA_KEY_NAME = 'feedback-form-state';
+
+const checkValues =
+  JSON.parse(localStorage.getItem(DATA_KEY_NAME)) ?? '';
+const emailInput = form.querySelector('[name="email"]');
+const messageInput = form.querySelector('[name="message"]');
+
+emailInput.value = checkValues.email ?? '';
+messageInput.value = checkValues.message ?? '';
+
+const throttleFunc = throttle(500, feedbackFormData => {
+  saveToLocalStorage(DATA_KEY_NAME, feedbackFormData)
+});
+
+function inputValue(e) {
   e.preventDefault();
+  const { email, message } = e.currentTarget.elements;
 
-  const formData = getObjWithFormData(e.currentTarget)
+  throttleFunc({
+    email: email.value,
+    message: message.value,
+  });
+}
+
+function onSubmit(e) {
+  e.preventDefault();
+  console.log(e.currentTarget.elements);
+  const { email, message } = e.currentTarget.elements;
+
   console.log("Відправлено наступні дані:");
-  for (const key in formData) {
-    console.log(key + ": " + formData[key]);
-  }
-
-  clearForm(e.currentTarget);
-  removeFromLocalStorage(dataKeyName)
-})
-
-myForm.addEventListener('input', throttle(onMyFormInput, 500));
-
-function onMyFormInput(e){
-  saveToLocalStorage(dataKeyName, getObjWithFormData(e.currentTarget));
+  console.log(`${email.name}: ${email.value}`);
+  console.log(`${message.name}: ${message.value}`);
+  
+  form.reset();
+  localStorage.removeItem(DATA_KEY_NAME);
 }
 
-const loadLocalFormData = readFromLocalStorage(dataKeyName);
-for (const key in loadLocalFormData) {
-  if(myForm.elements[key]){
-    myForm.elements[key].value = loadLocalFormData[key];
-  }
-}
